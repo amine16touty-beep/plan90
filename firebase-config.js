@@ -1,10 +1,9 @@
-// الصق هنا إعدادات Firebase حقتك (الخطوة 3 في دليل الإعداد)
-// Paste your Firebase web config here.
+// Firebase web config (public by design; data is protected by Firestore rules)
 window.FIREBASE_CONFIG = {
-  apiKey: "PASTE_API_KEY",
-  authDomain: "PASTE.firebaseapp.com",
-  projectId: "PASTE",
-  storageBucket: "PASTE.appspot.com",
-  messagingSenderId: "PASTE",
-  appId: "PASTE"
+  apiKey: "AIzaSyAQcFg695I1dY4EK8_4Z_fcglNYBDi2zbo",
+  authDomain: "plan90-41632.firebaseapp.com",
+  projectId: "plan90-41632",
+  storageBucket: "plan90-41632.firebasestorage.app",
+  messagingSenderId: "512605962433",
+  appId: "1:512605962433:web:53a4e421633698278a1440"
 };

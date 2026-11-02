@@ -1,5 +1,5 @@
 // Offline cache: app shell + Firebase SDK + fonts. Bump VERSION after each update.
-const VERSION = 'plan90-v2';
+const VERSION = 'plan90-v3';
 const SHELL = ['./', 'index.html', 'firebase-config.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png', 'reminder.ics', 'vendor/firebase-app-compat.js', 'vendor/firebase-auth-compat.js', 'vendor/firebase-firestore-compat.js'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
