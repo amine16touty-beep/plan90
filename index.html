@@ -391,8 +391,8 @@ async function attach(user){
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){const c=Math.min(Math.max(curDay(),1),90);if(sel!==c&&view==='today'){sel=c;softRender()}}});
 function detach(){unsubs.forEach(u=>u());unsubs=[];me=null;localSave();render()}
 function authErr(e){const m={'auth/invalid-credential':'الإيميل أو كلمة السر غلط','auth/wrong-password':'كلمة السر غلط','auth/user-not-found':'ما فيه حساب بهالإيميل، اضغط "حساب جديد"','auth/email-already-in-use':'الإيميل مسجّل، اضغط "دخول"','auth/weak-password':'كلمة السر لازم 6 أحرف على الأقل','auth/invalid-email':'الإيميل مو صحيح','auth/unauthorized-domain':'الدومين مو مضاف في Firebase (Authorized domains)','auth/network-request-failed':'ما فيه نت'};
-  const el=$('#authMsg');if(el)el.textContent=m[e.code]||('صار خطأ: '+(e.code||e.message))}
-function signInGoogle(){const p=new firebase.auth.GoogleAuthProvider();auth.signInWithPopup(p).catch(e=>{if(/popup|operation-not-supported/.test(e.code||''))auth.signInWithRedirect(p).catch(authErr);else authErr(e)})}
+  const msg=m[e.code]||('صار خطأ: '+(e.code||e.message));const el=$('#authMsg');if(el)el.textContent=msg;setStatus('err',msg)}
+function signInGoogle(){if(!auth){setStatus('err','المزامنة ما اشتغلت، حدّث الصفحة');return}setStatus('','جاري فتح نافذة Google…');const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});auth.signInWithPopup(p).catch(e=>{if(/popup|operation-not-supported/.test(e.code||''))auth.signInWithRedirect(p).catch(authErr);else authErr(e)})}
 function exportData(){const blob=new Blob([JSON.stringify({cfg,days,reviews,exported:new Date().toISOString()},null,1)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='plan90-'+ymd(new Date())+'.json';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
 function importData(file){const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(!o.cfg)throw 0;cfg=Object.assign(defaults(),o.cfg);days=o.days||{};reviews=o.reviews||{};draft=null;localSave();if(me)uploadAll();view='today';render();setStatus('ok','تم الاستيراد')}catch(e){setStatus('err','الملف مو صحيح')}};r.readAsText(file)}
 function renderAccount(){
@@ -451,7 +451,7 @@ function render(){
   $('#phaseName').textContent=c<1?'قبل البداية':c>90?'خلصت الخطة':PHASE_NAMES[phaseOf(cd)];
   document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.v===view));
   ['today','reviews','insights','setup'].forEach(v=>{$('#v-'+v).hidden=v!==view});
-  $('#banner').innerHTML=(FBCFG&&!me&&view!=='setup')?`<div class="banner"><span>سجّل دخول عشان بياناتك تتزامن بين جوالك وآيبادك ولابتوبك.</span><button class="btn primary" data-go="setup">تسجيل الدخول</button></div>`:cfg.example&&view!=='setup'?`<div class="banner"><span>المهارات والعادات والمراحل هنا قيم مبدئية كمثال. عدّلها على مقاسك قبل ما تبدأ.</span><button class="btn primary" data-go="setup">عدّل الإعداد</button></div>`:'';
+  $('#banner').innerHTML=(FBCFG&&!me&&view!=='setup')?`<div class="banner"><span>سجّل دخول عشان بياناتك تتزامن بين جوالك وآيبادك ولابتوبك.</span><span class="actions"><button class="btn primary" id="gSign">الدخول بحساب Google</button><button class="btn" data-go="setup">بالإيميل</button></span></div>`:cfg.example&&view!=='setup'?`<div class="banner"><span>المهارات والعادات والمراحل هنا قيم مبدئية كمثال. عدّلها على مقاسك قبل ما تبدأ.</span><button class="btn primary" data-go="setup">عدّل الإعداد</button></div>`:'';
   $('#phases').innerHTML=cfg.phases.map((p,i)=>{
     const st=c>(i+1)*30?'done':(c>=i*30+1&&c<=(i+1)*30)?'on':'';
     return `<div class="ph ${st}"><div class="t">${PHASE_NAMES[i]} <span class="label">${PHASE_SUB[i]}</span></div><p>${esc(p.goal)}</p><p><b>الدليل:</b> ${esc(p.proof)}</p></div>`}).join('');
