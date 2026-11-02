@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111417">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="90 يوم">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>خطة 90 يوم</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@500;700&display=swap">
+<style>
+/* Layout: a mixing-console strip. Header meter on top, today's channel strip, then the 90-step "tape" heatmap, reviews below. */
+:root{
+  --bg:#EEF0F2; --panel:#FFFFFF; --ink:#16191D; --muted:#5D6670; --line:#D6DBE0;
+  --accent:#C77700; --accent-ink:#FFFFFF; --accent-soft:#F6E3C4;
+  --good:#2F8F5B; --warn:#B4442B;
+  --h0:#E1E5E9; --h1:#F1D9AE; --h2:#E5B266; --h3:#D18C1E; --h4:#9E6100;
+  --f-display:"Readex Pro","IBM Plex Sans Arabic",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans Arabic",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111417; --panel:#1A1E23; --ink:#E9ECEF; --muted:#98A2AD; --line:#2C333A;
+  --accent:#F0A12E; --accent-ink:#1A1206; --accent-soft:#3A2A12;
+  --good:#5BC28A; --warn:#F07A5E;
+  --h0:#242A30; --h1:#4A3517; --h2:#80571C; --h3:#C0801F; --h4:#F4B04A;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111417; --panel:#1A1E23; --ink:#E9ECEF; --muted:#98A2AD; --line:#2C333A;
+  --accent:#F0A12E; --accent-ink:#1A1206; --accent-soft:#3A2A12;
+  --good:#5BC28A; --warn:#F07A5E;
+  --h0:#242A30; --h1:#4A3517; --h2:#80571C; --h3:#C0801F; --h4:#F4B04A;
+  color-scheme:dark}
+*{box-sizing:border-box}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);-webkit-text-size-adjust:100%}
+body{margin:0}
+img{max-width:100%}
+.authbox{display:flex;flex-direction:column;gap:10px;max-width:420px}
+.or{font-size:.8rem;color:var(--muted);text-align:center}
+.linkbtn{background:none;border:0;color:var(--accent);padding:0;font-weight:600;text-decoration:underline}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6}
+.wrap{max-width:980px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;line-height:1.25}
+h1{font-size:1.6rem}h2{font-size:1.15rem}h3{font-size:1rem}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.label{font-size:.78rem;color:var(--muted);letter-spacing:.02em}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+input,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
+textarea{min-height:70px;resize:vertical}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;min-width:0}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.daybig{display:flex;align-items:baseline;gap:8px}
+.daybig .n{font-family:var(--f-mono);font-size:2.6rem;font-weight:600;line-height:1;color:var(--accent)}
+.status{font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.dot.ok{background:var(--good)}.dot.err{background:var(--warn)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:6px 14px;font-size:.9rem}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+/* phase track */
+.phases{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ph{border-top:4px solid var(--h0);padding-top:8px;min-width:0}
+.ph.on{border-color:var(--accent)}.ph.done{border-color:var(--h3)}
+.ph .t{font-family:var(--f-display);font-weight:700}
+.ph p{margin:2px 0 0;font-size:.82rem;color:var(--muted)}
+
+/* meters */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stat .v{font-family:var(--f-mono);font-size:1.5rem;font-weight:600}
+.meter{display:flex;gap:2px;margin-top:6px;direction:ltr}
+.meter i{flex:1;height:8px;border-radius:2px;background:var(--h0)}
+.meter i.f{background:var(--accent)}
+.alert{border:1px solid var(--warn);color:var(--warn);border-radius:10px;padding:10px 14px;font-weight:500}
+.banner{background:var(--accent-soft);border-radius:10px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+
+/* today */
+.grid2{display:grid;grid-template-columns:1.2fr 1fr;gap:18px;align-items:start}
+.dayhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.nav{display:flex;gap:6px}
+.iconbtn{border:1px solid var(--line);background:var(--bg);border-radius:8px;width:36px;height:36px;font-family:var(--f-mono)}
+.iconbtn:disabled{opacity:.35;cursor:default}
+.habits{display:flex;flex-direction:column;gap:8px}
+.habit{display:flex;align-items:center;gap:12px;text-align:start;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 12px;width:100%}
+.habit .box{flex:none;width:22px;height:22px;border-radius:6px;border:2px solid var(--muted);display:grid;place-items:center;font-size:14px;color:var(--accent-ink)}
+.habit[aria-pressed="true"]{border-color:var(--accent)}
+.habit[aria-pressed="true"] .box{background:var(--accent);border-color:var(--accent)}
+.habit .nm{font-weight:600;display:block}
+.habit .mn{font-size:.8rem;color:var(--muted);display:block}
+.skill{display:flex;flex-direction:column;gap:6px;padding:12px 0;border-bottom:1px solid var(--line)}
+.skill:last-child{border-bottom:0}
+.skill .row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.mins{display:flex;align-items:center;gap:6px;direction:ltr}
+.mins input{width:72px;text-align:center;font-family:var(--f-mono)}
+.chip{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:3px 10px;font-family:var(--f-mono);font-size:.82rem}
+.bar{height:6px;border-radius:3px;background:var(--h0);overflow:hidden}
+.bar b{display:block;height:100%;background:var(--accent);border-radius:3px}
+.energy{display:flex;gap:6px;direction:ltr}
+.energy button{flex:1;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:6px 0;font-family:var(--f-mono)}
+.energy button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.field{display:flex;flex-direction:column;gap:6px;margin-top:14px}
+
+/* tape heatmap */
+.tape{display:flex;flex-direction:column;gap:14px}
+.tape-row .cells{display:grid;grid-template-columns:repeat(15,1fr);gap:4px;margin-top:6px}
+.cell{aspect-ratio:1;max-width:100%;border-radius:4px;border:0;background:var(--h0);padding:0;font-family:var(--f-mono);font-size:.62rem;color:transparent}
+.cell.l1{background:var(--h1)}.cell.l2{background:var(--h2)}.cell.l3{background:var(--h3)}.cell.l4{background:var(--h4)}
+.cell.today{outline:2px solid var(--ink);outline-offset:1px}
+.cell.sel{color:var(--ink)}
+.cell.future{opacity:.45;cursor:default}
+.legend{display:flex;align-items:center;gap:4px;font-size:.75rem;color:var(--muted)}
+.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+/* reviews */
+.weeks{display:flex;flex-direction:column;gap:10px}
+details.rv{border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+details.rv summary{list-style:none;cursor:pointer;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+details.rv summary::-webkit-details-marker{display:none}
+details.rv .body{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px}
+.pill{font-size:.75rem;border-radius:999px;padding:2px 10px;background:var(--h0);color:var(--muted);white-space:nowrap}
+.pill.due{background:var(--accent);color:var(--accent-ink)}
+.pill.done{background:var(--accent-soft);color:var(--ink)}
+.pill.locked{opacity:.6}
+
+/* setup */
+.setrow{display:grid;grid-template-columns:1.2fr 1.6fr auto;gap:8px;align-items:center}
+.setrow.sk{grid-template-columns:1.4fr 90px auto}
+.list{display:flex;flex-direction:column;gap:8px}
+.btn{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:8px 14px}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.btn.danger{color:var(--warn);border-color:var(--warn)}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.sec{display:flex;flex-direction:column;gap:12px}
+
+@media (max-width:760px){
+  .grid2{grid-template-columns:1fr}
+  .stats{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:480px){
+  .phases{grid-template-columns:1fr}
+  .setrow,.setrow.sk{grid-template-columns:1fr auto}
+  .setrow input:nth-child(2){grid-column:1}
+  .daybig .n{font-size:2.1rem}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap" dir="rtl" lang="ar" id="app">
+  <header class="top">
+    <div>
+      <div class="label">خطة 90 يوم · مهارات وعادات</div>
+      <div class="daybig"><span class="n" id="dayN">1</span><span class="muted num">/ 90</span><h1 id="phaseName" style="margin-inline-start:8px">التأسيس</h1></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+      <nav class="tabs" role="tablist">
+        <button class="tab" role="tab" data-v="today" aria-selected="true">اليوم</button>
+        <button class="tab" role="tab" data-v="reviews" aria-selected="false">المراجعات</button>
+        <button class="tab" role="tab" data-v="setup" aria-selected="false">الإعداد</button>
+      </nav>
+      <div class="status"><span class="dot" id="sdot"></span><span id="stext">جاري التحميل…</span></div>
+    </div>
+  </header>
+
+  <div id="banner"></div>
+
+  <section class="phases" id="phases"></section>
+
+  <!-- TODAY -->
+  <section id="v-today" class="sec">
+    <div id="alerts"></div>
+    <div class="stats" id="stats"></div>
+    <div class="grid2">
+      <div class="panel">
+        <div class="dayhead">
+          <div><h2 id="selTitle">اليوم</h2><div class="label" id="selDate"></div></div>
+          <div class="nav">
+            <button class="iconbtn" id="prev" aria-label="اليوم السابق">→</button>
+            <button class="iconbtn" id="next" aria-label="اليوم التالي">←</button>
+          </div>
+        </div>
+        <div class="label" style="margin-bottom:8px">العادات · النسخة الدنيا تكفي</div>
+        <div class="habits" id="habits"></div>
+        <div class="field">
+          <span class="label">مستوى الطاقة</span>
+          <div class="energy" id="energy"></div>
+        </div>
+        <div class="field">
+          <label class="label" for="note">وش تعلمت اليوم؟ (سطر واحد)</label>
+          <input id="note" maxlength="200" placeholder="مثال: فهمت الفرق بين الكمبرسور السريع والبطيء على الفوكال">
+        </div>
+      </div>
+      <div class="panel">
+        <h2>المهارات</h2>
+        <div class="label">دقائق تدريب مركّز</div>
+        <div id="skills"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <h2>شريط الـ 90 يوم</h2>
+        <div class="legend">أقل <i style="background:var(--h0)"></i><i style="background:var(--h1)"></i><i style="background:var(--h2)"></i><i style="background:var(--h3)"></i><i style="background:var(--h4)"></i> أكثر</div>
+      </div>
+      <div class="tape" id="tape" style="margin-top:12px"></div>
+    </div>
+  </section>
+
+  <!-- REVIEWS -->
+  <section id="v-reviews" class="sec" hidden>
+    <div class="panel">
+      <h2>مراجعة المراحل</h2>
+      <p class="muted" style="margin:4px 0 12px">كل 30 يوم: هل سلّمت الدليل؟ قارن عينة من أول المرحلة بعينة من آخرها.</p>
+      <div class="weeks" id="phaseReviews"></div>
+    </div>
+    <div class="panel">
+      <h2>المراجعة الأسبوعية</h2>
+      <p class="muted" style="margin:4px 0 12px">15 دقيقة كل نهاية أسبوع. ثلاث أسئلة بس.</p>
+      <div class="weeks" id="weekReviews"></div>
+    </div>
+  </section>
+
+  <!-- SETUP -->
+  <section id="v-setup" class="sec" hidden>
+    <div class="panel sec">
+      <h2>الحساب والمزامنة</h2>
+      <div id="account"></div>
+    </div>
+    <div class="panel sec">
+      <h2>تاريخ البداية</h2>
+      <input type="date" id="startDate" style="max-width:220px;direction:ltr">
+    </div>
+    <div class="panel sec">
+      <div><h2>المهارات (2 بالكثير)</h2><div class="label">الاسم والهدف اليومي بالدقائق. الأولى أساسية والثانية ثانوية.</div></div>
+      <div class="list" id="setSkills"></div>
+      <div class="actions"><button class="btn" id="addSkill">+ مهارة</button></div>
+    </div>
+    <div class="panel sec">
+      <div><h2>العادات (3 إلى 5)</h2><div class="label">الاسم والنسخة الدنيا اللي تسويها حتى في أسوأ يوم.</div></div>
+      <div class="list" id="setHabits"></div>
+      <div class="actions"><button class="btn" id="addHabit">+ عادة</button></div>
+    </div>
+    <div class="panel sec">
+      <div><h2>المراحل</h2><div class="label">هدف كل مرحلة والدليل الملموس اللي تسلّمه في آخرها.</div></div>
+      <div class="list" id="setPhases"></div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="saveSetup">حفظ الإعداد</button>
+      <button class="btn" id="exportBtn">تصدير نسخة احتياطية</button>
+      <label class="btn" for="importFile" style="cursor:pointer">استيراد</label><input type="file" id="importFile" accept="application/json,.json" hidden>
+      <button class="btn danger" id="resetAll">مسح كل البيانات</button>
+      <span id="resetConfirm" hidden>متأكد؟ <button class="btn danger" id="resetYes">نعم، امسح</button> <button class="btn" id="resetNo">إلغاء</button></span>
+    </div>
+  </section>
+</div>
+
+<script src="vendor/firebase-app-compat.js"></script>
+<script src="vendor/firebase-auth-compat.js"></script>
+<script src="vendor/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+(function(){
+document.documentElement.setAttribute('dir','rtl');
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,8);
+const pad=n=>String(n).padStart(2,'0');
+const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const parseD=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const PHASE_NAMES=['التأسيس','البناء','الإطلاق'];
+const PHASE_SUB=['الأيام 1–30','الأيام 31–60','الأيام 61–90'];
+
+function defaults(){return{
+  start:ymd(new Date()),
+  skills:[{id:'s1',name:'هندسة الصوت',target:60},{id:'s2',name:'صناعة المحتوى',target:30}],
+  habits:[
+    {id:'h1',name:'نوم قبل 12',min:'في السرير 11:45 والجوال بعيد'},
+    {id:'h2',name:'رياضة',min:'10 دقايق مشي على الأقل'},
+    {id:'h3',name:'قراءة',min:'5 صفحات'},
+    {id:'h4',name:'أول ساعة بدون سوشال',min:'لا تفتح إنستا قبل ما تخلص أول مهمة'},
+    {id:'h5',name:'تجربة AI',min:'15 دقيقة على أداة أو workflow جديد'}],
+  phases:[
+    {goal:'ثبّت العادات وتعلّم الأساسيات',proof:'ميكس أغنية كاملة + 5 فيديوهات منشورة'},
+    {goal:'ارفع الشدة واشتغل على مشاريع حقيقية',proof:'3 ميكسات لأشخاص حقيقيين + 10 ريلز'},
+    {goal:'أنتج شي ينشاف ويُحكم عليه',proof:'بورتفوليو صوتي + سلسلة محتوى + ورشة تقودها'}],
+  example:true}}
+
+let cfg=defaults(), days={}, reviews={}, sel=1, view='today';
+
+/* ---------- storage ---------- */
+const LKEY='plan90-v1';
+const FBCFG=(window.FIREBASE_CONFIG&&window.FIREBASE_CONFIG.apiKey&&!/PASTE/.test(window.FIREBASE_CONFIG.apiKey)&&window.firebase)?window.FIREBASE_CONFIG:null;
+let fs=null,auth=null,me=null,unsubs=[],timers={},pendingRender=false;
+function setStatus(kind,text){$('#sdot').className='dot'+(kind==='ok'?' ok':kind==='err'?' err':'');$('#stext').textContent=text}
+function localLoad(){try{const r=JSON.parse(localStorage.getItem(LKEY)||'null');if(r){cfg=Object.assign(defaults(),r.cfg||{});days=r.days||{};reviews=r.reviews||{}}}catch(e){}}
+function localSave(){try{localStorage.setItem(LKEY,JSON.stringify({cfg,days,reviews}));if(!me)setStatus('',FBCFG?'محفوظ على هذا الجهاز · سجّل دخول للمزامنة':'محفوظ على هذا الجهاز')}catch(e){setStatus('err','ما قدرت أحفظ على هذا المتصفح')}}
+const B=()=>'users/'+me.uid;
+function cloudSet(path,data){
+  if(!me)return;
+  clearTimeout(timers[path]);setStatus('','جاري الحفظ…');
+  const d=JSON.parse(JSON.stringify(data));
+  timers[path]=setTimeout(()=>{
+    if(!navigator.onLine)setStatus('','محفوظ · بيتزامن لما يرجع النت');
+    fs.doc(B()+'/'+path).set(d).then(()=>setStatus('ok','متزامن · '+(me.email||'حسابك'))).catch(err=>setStatus('err','فشل الحفظ ('+(err.code||'خطأ')+')'));
+  },600);
+}
+function save(path,data){localSave();cloudSet(path,data)}
+const saveDay=n=>save('days/d'+pad(n),Object.assign({n},days[n]||{}));
+const saveCfg=()=>save('meta/plan',cfg);
+const saveReview=k=>save('reviews/'+k,reviews[k]||{});
+function uploadAll(){if(!me)return;const b=fs.batch();b.set(fs.doc(B()+'/meta/plan'),JSON.parse(JSON.stringify(cfg)));
+  for(const n in days)b.set(fs.doc(B()+'/days/d'+pad(+n)),JSON.parse(JSON.stringify(Object.assign({n:+n},days[n]))));
+  for(const k in reviews)b.set(fs.doc(B()+'/reviews/'+k),JSON.parse(JSON.stringify(reviews[k])));
+  return b.commit()}
+function softRender(){const a=document.activeElement;if(a&&/INPUT|TEXTAREA/.test(a.tagName)){pendingRender=true;return}render()}
+document.addEventListener('focusout',()=>{if(pendingRender){pendingRender=false;setTimeout(()=>{const a=document.activeElement;if(!a||!/INPUT|TEXTAREA/.test(a.tagName))render();else pendingRender=true},0)}});
+async function attach(user){
+  me=user;setStatus('','جاري المزامنة…');
+  try{
+    const [p,ds,rs]=await Promise.all([fs.doc(B()+'/meta/plan').get(),fs.collection(B()+'/days').get(),fs.collection(B()+'/reviews').get()]);
+    if(!p.exists&&ds.empty&&rs.empty){await uploadAll()}
+    else{
+      cfg=p.exists?Object.assign(defaults(),p.data()):cfg;
+      days={};ds.forEach(d=>{const v=d.data();if(v&&v.n)days[v.n]=v});
+      reviews={};rs.forEach(d=>{reviews[d.id]=d.data()||{}});
+      localSave();
+    }
+    setStatus('ok','متزامن · '+(me.email||'حسابك'));
+  }catch(e){setStatus('err','ما قدرت أوصل للسحابة ('+(e.code||'خطأ')+')')}
+  sel=Math.min(Math.max(curDay(),1),90);render();
+  unsubs.push(fs.doc(B()+'/meta/plan').onSnapshot(s=>{if(s.metadata.hasPendingWrites||!s.exists)return;cfg=Object.assign(defaults(),s.data());localSave();softRender()},()=>{}));
+  unsubs.push(fs.collection(B()+'/days').onSnapshot(q=>{let ch=false;q.docChanges().forEach(c=>{if(c.doc.metadata.hasPendingWrites)return;const v=c.doc.data();if(!v||!v.n)return;if(c.type==='removed')delete days[v.n];else days[v.n]=v;ch=true});if(ch){localSave();softRender()}},()=>{}));
+  unsubs.push(fs.collection(B()+'/reviews').onSnapshot(q=>{let ch=false;q.docChanges().forEach(c=>{if(c.doc.metadata.hasPendingWrites)return;if(c.type==='removed')delete reviews[c.doc.id];else reviews[c.doc.id]=c.doc.data()||{};ch=true});if(ch){localSave();softRender()}},()=>{}));
+}
+function detach(){unsubs.forEach(u=>u());unsubs=[];me=null;localSave();render()}
+function authErr(e){const m={'auth/invalid-credential':'الإيميل أو كلمة السر غلط','auth/wrong-password':'كلمة السر غلط','auth/user-not-found':'ما فيه حساب بهالإيميل، اضغط "حساب جديد"','auth/email-already-in-use':'الإيميل مسجّل، اضغط "دخول"','auth/weak-password':'كلمة السر لازم 6 أحرف على الأقل','auth/invalid-email':'الإيميل مو صحيح','auth/unauthorized-domain':'الدومين مو مضاف في Firebase (Authorized domains)','auth/network-request-failed':'ما فيه نت'};
+  const el=$('#authMsg');if(el)el.textContent=m[e.code]||('صار خطأ: '+(e.code||e.message))}
+function signInGoogle(){const p=new firebase.auth.GoogleAuthProvider();auth.signInWithPopup(p).catch(e=>{if(/popup|operation-not-supported/.test(e.code||''))auth.signInWithRedirect(p).catch(authErr);else authErr(e)})}
+function exportData(){const blob=new Blob([JSON.stringify({cfg,days,reviews,exported:new Date().toISOString()},null,1)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='plan90-'+ymd(new Date())+'.json';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+function importData(file){const r=new FileReader();r.onload=()=>{try{const o=JSON.parse(r.result);if(!o.cfg)throw 0;cfg=Object.assign(defaults(),o.cfg);days=o.days||{};reviews=o.reviews||{};draft=null;localSave();if(me)uploadAll();view='today';render();setStatus('ok','تم الاستيراد')}catch(e){setStatus('err','الملف مو صحيح')}};r.readAsText(file)}
+function renderAccount(){
+  const el=$('#account');if(!el)return;
+  if(!FBCFG){el.innerHTML='<p class="muted" style="margin:0">المزامنة مو مفعّلة لأن ملف <b>firebase-config.js</b> فاضي. شوف ملف الإعداد.</p>';return}
+  if(me){el.innerHTML=`<p style="margin:0">مسجّل دخول: <b dir="ltr">${esc(me.email||'')}</b>. بياناتك تتزامن تلقائياً.</p><div class="actions"><button class="btn" id="signOut">تسجيل خروج</button></div>`;return}
+  el.innerHTML=`<div class="authbox"><button class="btn primary" id="gSign">الدخول بحساب Google</button><div class="or">أو بالإيميل</div>
+  <input id="aEmail" type="email" placeholder="الإيميل" dir="ltr" autocomplete="email"><input id="aPass" type="password" placeholder="كلمة السر (6 أحرف أو أكثر)" dir="ltr" autocomplete="current-password">
+  <div class="actions"><button class="btn" id="eSign">دخول</button><button class="btn" id="eNew">حساب جديد</button></div><div class="label" id="authMsg" style="color:var(--warn)"></div></div>`;
+}
+
+async function init(){
+  localLoad();sel=Math.min(Math.max(curDay(),1),90);render();localSave();
+  if(FBCFG){
+    try{
+      firebase.initializeApp(FBCFG);auth=firebase.auth();fs=firebase.firestore();
+      try{await fs.enablePersistence({synchronizeTabs:true})}catch(e){}
+      auth.getRedirectResult().catch(authErr);
+      auth.onAuthStateChanged(u=>{if(u&&(!me||me.uid!==u.uid))attach(u);else if(!u&&me)detach();else if(!u)render()});
+    }catch(e){setStatus('err','إعداد Firebase فيه خطأ')}
+  }
+  if('serviceWorker' in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+/* ---------- logic ---------- */
+function curDay(){return Math.floor((parseD(ymd(new Date()))-parseD(cfg.start))/864e5)+1}
+function dateOf(n){const d=parseD(cfg.start);d.setDate(d.getDate()+n-1);return d}
+const fmt=d=>d.toLocaleDateString('ar-u-nu-latn',{weekday:'long',day:'numeric',month:'long'});
+function phaseOf(n){return Math.min(2,Math.floor((n-1)/30))}
+function score(n){
+  const d=days[n];if(!d)return 0;
+  const H=cfg.habits.length,S=cfg.skills.length;if(!H&&!S)return 0;
+  const h=cfg.habits.filter(x=>d.h&&d.h[x.id]).length;
+  const s=cfg.skills.reduce((a,x)=>a+Math.min(1,((d.m&&d.m[x.id])||0)/(x.target||1)),0);
+  return (h+s)/(H+S);
+}
+const level=s=>s<=0?0:s<.35?1:s<.65?2:s<1?3:4;
+function lastCounted(){return Math.min(90,curDay())}
+function stats(){
+  const L=lastCounted();let sum=0;
+  for(let i=1;i<=L;i++)sum+=score(i);
+  const consistency=L>0?sum/L:0;
+  let streak=0;let i=L;if(i>=1&&score(i)<.6)i--;
+  for(;i>=1&&score(i)>=.6;i--)streak++;
+  const mins={};cfg.skills.forEach(s=>{mins[s.id]=0;for(const k in days){mins[s.id]+=(days[k].m&&+days[k].m[s.id])||0}});
+  let hDone=0;for(const k in days){hDone+=cfg.habits.filter(x=>days[k].h&&days[k].h[x.id]).length}
+  return{consistency,streak,mins,hDone,L};
+}
+function weekRange(w){const a=(w-1)*7+1;return[a,Math.min(90,a+6)]}
+function weekScore(w){const[a,b]=weekRange(w);let s=0,c=0;for(let i=a;i<=Math.min(b,lastCounted());i++){s+=score(i);c++}return c?s/c:0}
+
+/* ---------- render ---------- */
+function render(){
+  const c=curDay(), cd=Math.min(Math.max(c,1),90);
+  $('#dayN').textContent=c<1?'0':Math.min(c,90);
+  $('#phaseName').textContent=c<1?'قبل البداية':c>90?'خلصت الخطة':PHASE_NAMES[phaseOf(cd)];
+  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.v===view));
+  ['today','reviews','setup'].forEach(v=>{$('#v-'+v).hidden=v!==view});
+  $('#banner').innerHTML=(FBCFG&&!me&&view!=='setup')?`<div class="banner"><span>سجّل دخول عشان بياناتك تتزامن بين جوالك وآيبادك ولابتوبك.</span><button class="btn primary" data-go="setup">تسجيل الدخول</button></div>`:cfg.example&&view!=='setup'?`<div class="banner"><span>المهارات والعادات والمراحل هنا قيم مبدئية كمثال. عدّلها على مقاسك قبل ما تبدأ.</span><button class="btn primary" data-go="setup">عدّل الإعداد</button></div>`:'';
+  $('#phases').innerHTML=cfg.phases.map((p,i)=>{
+    const st=c>(i+1)*30?'done':(c>=i*30+1&&c<=(i+1)*30)?'on':'';
+    return `<div class="ph ${st}"><div class="t">${PHASE_NAMES[i]} <span class="label">${PHASE_SUB[i]}</span></div><p>${esc(p.goal)}</p><p><b>الدليل:</b> ${esc(p.proof)}</p></div>`}).join('');
+  if(view==='today')renderToday();
+  if(view==='reviews')renderReviews();
+  if(view==='setup'){renderSetup();renderAccount()}
+}
+function meter(p){let h='';for(let i=0;i<20;i++)h+=`<i class="${i<Math.round(p*20)?'f':''}"></i>`;return `<div class="meter">${h}</div>`}
+function renderToday(){
+  const c=curDay(),S=stats();
+  // alerts
+  let al='';
+  if(c<1)al=`<div class="alert">الخطة تبدأ ${esc(fmt(parseD(cfg.start)))}. باقي ${1-c} يوم.</div>`;
+  else if(c>1&&c<=91&&score(c-1)===0&&c-1>=1)al=`<div class="alert">أمس فاتك. القاعدة: لا تفوّت يومين ورا بعض. سوّ النسخة الدنيا من كل عادة اليوم.</div>`;
+  $('#alerts').innerHTML=al;
+  const sk=cfg.skills.map(s=>`<div class="stat panel"><div class="label">${esc(s.name)}</div><div class="v">${(S.mins[s.id]/60).toFixed(1)}<span class="label"> ساعة</span></div><div class="label num">هدف المرحلة ${(s.target*30/60).toFixed(0)} ساعة</div></div>`).join('');
+  $('#stats').innerHTML=`<div class="stat panel"><div class="label">نسبة الالتزام</div><div class="v">${Math.round(S.consistency*100)}%</div>${meter(S.consistency)}</div>
+  <div class="stat panel"><div class="label">السلسلة الحالية</div><div class="v">${S.streak}<span class="label"> يوم</span></div><div class="label">يوم ≥ 60% يحسب</div></div>`+sk;
+  // day
+  const maxDay=Math.min(90,Math.max(1,c));
+  sel=Math.min(Math.max(sel,1),maxDay);
+  const d=days[sel]||{};
+  $('#selTitle').textContent=(sel===c?'اليوم · ':'')+'يوم '+sel;
+  $('#selDate').textContent=fmt(dateOf(sel))+' · '+PHASE_NAMES[phaseOf(sel)];
+  $('#prev').disabled=sel<=1;$('#next').disabled=sel>=maxDay;
+  $('#habits').innerHTML=cfg.habits.map(h=>{const on=!!(d.h&&d.h[h.id]);return `<button class="habit" data-h="${h.id}" aria-pressed="${on}"><span class="box">${on?'✓':''}</span><span><span class="nm">${esc(h.name)}</span><span class="mn">${esc(h.min)}</span></span></button>`}).join('')||'<p class="muted">أضف عادات من الإعداد.</p>';
+  $('#energy').innerHTML=[1,2,3,4,5].map(i=>`<button data-e="${i}" aria-pressed="${d.e===i}" aria-label="طاقة ${i}">${i}</button>`).join('');
+  const note=$('#note');if(document.activeElement!==note)note.value=d.note||'';
+  $('#skills').innerHTML=cfg.skills.map((s,i)=>{const m=(d.m&&+d.m[s.id])||0;const p=Math.min(1,m/(s.target||1));
+    return `<div class="skill"><div class="row"><div><b>${esc(s.name)}</b> <span class="label">${i===0?'أساسية':'ثانوية'} · هدف ${s.target} د</span></div></div>
+    <div class="row"><div class="mins"><input type="number" min="0" max="600" inputmode="numeric" id="m-${s.id}" data-m="${s.id}" value="${m||''}" placeholder="0" aria-label="دقائق ${esc(s.name)}"><span class="label">د</span></div>
+    <div class="mins"><button class="chip" data-add="${s.id}" data-v="15">+15</button><button class="chip" data-add="${s.id}" data-v="30">+30</button></div></div>
+    <div class="bar"><b style="width:${p*100}%"></b></div></div>`}).join('')||'<p class="muted">أضف مهارة من الإعداد.</p>';
+  // tape
+  let t='';
+  for(let p=0;p<3;p++){
+    let cells='';
+    for(let n=p*30+1;n<=p*30+30;n++){
+      const fut=n>c;const cls=['cell','l'+level(score(n)),n===c?'today':'',n===sel?'sel':'',fut?'future':''].join(' ');
+      cells+=`<button class="${cls}" data-day="${n}" ${fut?'disabled':''} aria-label="يوم ${n}" title="يوم ${n}: ${Math.round(score(n)*100)}%">${n}</button>`;
+    }
+    t+=`<div class="tape-row"><div class="label">${PHASE_NAMES[p]} · ${PHASE_SUB[p]}</div><div class="cells">${cells}</div></div>`;
+  }
+  $('#tape').innerHTML=t;
+}
+function rvFields(k,qs){const r=reviews[k]||{};return qs.map(([f,l,ph])=>`<label class="label" for="r-${k}-${f}">${l}</label><textarea id="r-${k}-${f}" data-rk="${k}" data-rf="${f}" placeholder="${esc(ph)}">${esc(r[f]||'')}</textarea>`).join('')}
+function renderReviews(){
+  const c=curDay();
+  const PQ=[['proof','سلّمت الدليل؟ وش هو بالضبط؟','رابط أو وصف للي أنجزته'],['compare','قبل وبعد: وش الفرق الملموس؟','قارن أول عينة بآخر عينة'],['next','وش تغيّر في المرحلة الجاية؟','عادة تشيلها، مهارة تركز عليها أكثر…']];
+  $('#phaseReviews').innerHTML=[0,1,2].map(i=>{const k='p'+(i+1),end=(i+1)*30,done=reviews[k]&&Object.values(reviews[k]).some(v=>v);
+    const st=done?'<span class="pill done">تمت</span>':c>=end?'<span class="pill due">مستحقة</span>':`<span class="pill locked">يوم ${end}</span>`;
+    return `<details class="rv" ${c>=end&&!done?'open':''}><summary><span><b>${PHASE_NAMES[i]}</b> <span class="label">${esc(cfg.phases[i].proof)}</span></span>${st}</summary><div class="body">${rvFields(k,PQ)}</div></details>`}).join('');
+  const WQ=[['good','وش نفع هالأسبوع؟','الشي اللي تبي تكرره'],['bad','وش ما نفع؟ وليش؟','بدون جلد ذات، سبب واضح'],['adjust','تعديل واحد للأسبوع الجاي','شي صغير وواضح']];
+  let h='';
+  for(let w=1;w<=13;w++){const[a,b]=weekRange(w),k='w'+w,done=reviews[k]&&Object.values(reviews[k]).some(v=>v),sc=weekScore(w);
+    const st=done?'<span class="pill done">تمت</span>':c>=b?'<span class="pill due">مستحقة</span>':`<span class="pill locked">يوم ${b}</span>`;
+    const open=!done&&c>=b&&c<b+7;
+    h+=`<details class="rv" ${open?'open':''}><summary><span><b>الأسبوع ${w}</b> <span class="label num">أيام ${a}–${b} · التزام ${c>=a?Math.round(sc*100)+'%':'—'}</span></span>${st}</summary><div class="body">${rvFields(k,WQ)}</div></details>`}
+  $('#weekReviews').innerHTML=h;
+}
+let draft=null;
+function renderSetup(){
+  if(!draft)draft=JSON.parse(JSON.stringify(cfg));
+  $('#startDate').value=draft.start;
+  $('#setSkills').innerHTML=draft.skills.map((s,i)=>`<div class="setrow sk"><input id="sk-n-${s.id}" data-si="${i}" data-sf="name" value="${esc(s.name)}" aria-label="اسم المهارة"><input id="sk-t-${s.id}" type="number" min="5" max="600" data-si="${i}" data-sf="target" value="${s.target}" aria-label="الدقائق اليومية" style="direction:ltr;text-align:center"><button class="iconbtn" data-rms="${i}" aria-label="حذف">×</button></div>`).join('');
+  $('#addSkill').disabled=draft.skills.length>=2;
+  $('#setHabits').innerHTML=draft.habits.map((h,i)=>`<div class="setrow"><input id="hb-n-${h.id}" data-hi="${i}" data-hf="name" value="${esc(h.name)}" aria-label="اسم العادة"><input id="hb-m-${h.id}" data-hi="${i}" data-hf="min" value="${esc(h.min)}" aria-label="النسخة الدنيا" placeholder="النسخة الدنيا"><button class="iconbtn" data-rmh="${i}" aria-label="حذف">×</button></div>`).join('');
+  $('#addHabit').disabled=draft.habits.length>=5;
+  $('#setPhases').innerHTML=draft.phases.map((p,i)=>`<div class="sec" style="gap:6px"><b>${PHASE_NAMES[i]} <span class="label">${PHASE_SUB[i]}</span></b><input id="ph-g-${i}" data-pi="${i}" data-pf="goal" value="${esc(p.goal)}" aria-label="الهدف"><input id="ph-p-${i}" data-pi="${i}" data-pf="proof" value="${esc(p.proof)}" aria-label="الدليل"></div>`).join('');
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click',e=>{
+  const t=e.target.closest('button');if(!t)return;
+  if(t.dataset.v&&t.classList.contains('tab')||t.dataset.go){view=t.dataset.go||t.dataset.v;if(view!=='setup')draft=null;render();return}
+  if(t.id==='prev'){sel--;render();return}
+  if(t.id==='next'){sel++;render();return}
+  if(t.dataset.day){sel=+t.dataset.day;render();$('#v-today .panel').scrollIntoView({behavior:'smooth',block:'start'});return}
+  const d=days[sel]||(days[sel]={});
+  if(t.dataset.h){d.h=d.h||{};d.h[t.dataset.h]=!d.h[t.dataset.h];saveDay(sel);render();return}
+  if(t.dataset.e){const v=+t.dataset.e;d.e=d.e===v?0:v;saveDay(sel);render();return}
+  if(t.dataset.add){d.m=d.m||{};d.m[t.dataset.add]=((+d.m[t.dataset.add])||0)+(+t.dataset.v);saveDay(sel);render();return}
+  // setup
+  if(t.id==='addSkill'&&draft.skills.length<2){draft.skills.push({id:'s'+uid(),name:'',target:30});renderSetup();return}
+  if(t.id==='addHabit'&&draft.habits.length<5){draft.habits.push({id:'h'+uid(),name:'',min:''});renderSetup();return}
+  if(t.dataset.rms){draft.skills.splice(+t.dataset.rms,1);renderSetup();return}
+  if(t.dataset.rmh){draft.habits.splice(+t.dataset.rmh,1);renderSetup();return}
+  if(t.id==='saveSetup'){
+    draft.skills=draft.skills.filter(s=>s.name.trim()).map(s=>({...s,target:Math.max(5,+s.target||30)}));
+    draft.habits=draft.habits.filter(h=>h.name.trim());
+    draft.example=false;cfg=draft;draft=null;saveCfg();view='today';sel=Math.min(Math.max(curDay(),1),90);render();return}
+  if(t.id==='gSign'){signInGoogle();return}
+  if(t.id==='eSign'||t.id==='eNew'){const em=$('#aEmail').value.trim(),pw=$('#aPass').value;(t.id==='eSign'?auth.signInWithEmailAndPassword(em,pw):auth.createUserWithEmailAndPassword(em,pw)).catch(authErr);return}
+  if(t.id==='signOut'){auth.signOut();return}
+  if(t.id==='exportBtn'){exportData();return}
+  if(t.id==='resetAll'){$('#resetConfirm').hidden=false;return}
+  if(t.id==='resetNo'){$('#resetConfirm').hidden=true;return}
+  if(t.id==='resetYes'){
+    const oldDays=Object.keys(days),oldRv=Object.keys(reviews);
+    cfg=defaults();days={};reviews={};draft=null;
+    localSave();
+    if(me){const b=fs.batch();oldDays.forEach(n=>b.delete(fs.doc(B()+'/days/d'+pad(+n))));oldRv.forEach(k=>b.delete(fs.doc(B()+'/reviews/'+k)));b.set(fs.doc(B()+'/meta/plan'),JSON.parse(JSON.stringify(cfg)));b.commit().catch(()=>{})}
+    view='today';sel=1;render();return}
+});
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.id==='note'){const d=days[sel]||(days[sel]={});d.note=t.value;saveDay(sel);return}
+  if(t.dataset.m){const d=days[sel]||(days[sel]={});d.m=d.m||{};d.m[t.dataset.m]=Math.max(0,Math.min(600,+t.value||0));saveDay(sel);
+    const s=cfg.skills.find(x=>x.id===t.dataset.m);const bar=t.closest('.skill').querySelector('.bar b');bar.style.width=Math.min(100,d.m[t.dataset.m]/(s.target||1)*100)+'%';return}
+  if(t.dataset.rk){const r=reviews[t.dataset.rk]||(reviews[t.dataset.rk]={});r[t.dataset.rf]=t.value;saveReview(t.dataset.rk);return}
+  if(!draft)return;
+  if(t.id==='startDate'&&t.value){draft.start=t.value;return}
+  if(t.dataset.si)draft.skills[+t.dataset.si][t.dataset.sf]=t.dataset.sf==='target'?+t.value:t.value;
+  if(t.dataset.hi)draft.habits[+t.dataset.hi][t.dataset.hf]=t.value;
+  if(t.dataset.pi)draft.phases[+t.dataset.pi][t.dataset.pf]=t.value;
+});
+document.addEventListener('change',e=>{if(e.target.dataset.m)render();if(e.target.id==='importFile'&&e.target.files[0]){importData(e.target.files[0]);e.target.value=''}});
+init();
+})();
+</script>
+
+</body>
+</html>
