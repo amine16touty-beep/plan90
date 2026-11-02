@@ -1,0 +1,22 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//plan90//AR
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:خطة 90 يوم
+BEGIN:VEVENT
+UID:plan90-daily-reminder@amine16touty-beep.github.io
+DTSTAMP:20261102T200000Z
+DTSTART:20261102T220000
+DURATION:PT5M
+RRULE:FREQ=DAILY;COUNT=90
+SUMMARY:سجّل يومك في خطة 90 يوم
+DESCRIPTION:دقيقتين: العادات والدقائق والطاقة وسطر وش تعلمت.\nhttps://amine16touty-beep.github.io/plan90/
+URL:https://amine16touty-beep.github.io/plan90/
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:سجّل يومك في خطة 90 يوم
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+END:VCALENDAR

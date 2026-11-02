@@ -92,7 +92,7 @@ textarea{min-height:70px;resize:vertical}
 .nav{display:flex;gap:6px}
 .iconbtn{border:1px solid var(--line);background:var(--bg);border-radius:8px;width:36px;height:36px;font-family:var(--f-mono)}
 .iconbtn:disabled{opacity:.35;cursor:default}
-.habits{display:flex;flex-direction:column;gap:8px}
+.habits{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
 .habit{display:flex;align-items:center;gap:12px;text-align:start;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 12px;width:100%}
 .habit .box{flex:none;width:22px;height:22px;border-radius:6px;border:2px solid var(--muted);display:grid;place-items:center;font-size:14px;color:var(--accent-ink)}
 .habit[aria-pressed="true"]{border-color:var(--accent)}
@@ -144,11 +144,28 @@ details.rv .body{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px
 .actions{display:flex;flex-wrap:wrap;gap:8px}
 .sec{display:flex;flex-direction:column;gap:12px}
 
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;display:flex;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.modal .box2{background:var(--panel);border-radius:16px;padding:16px;max-width:420px;width:100%;max-height:100%;overflow:auto;display:flex;flex-direction:column;gap:12px}
+.modal img{width:100%;border-radius:10px;display:block}
+.hbar{display:grid;grid-template-columns:minmax(90px,1fr) 2fr 44px;gap:10px;align-items:center;font-size:.88rem}
+.hbar .tr{height:10px;border-radius:5px;background:var(--h0);overflow:hidden}.hbar .tr b{display:block;height:100%;background:var(--accent)}
+.cols{display:flex;align-items:flex-end;gap:6px;height:140px;direction:ltr;border-bottom:1px solid var(--line);padding-top:8px}
+.cols .c{flex:1;display:flex;gap:2px;align-items:flex-end;height:100%;min-width:0}
+.cols .c i{flex:1;background:var(--accent);border-radius:3px 3px 0 0;min-height:2px}
+.cols .c i.b{background:var(--h2)}
+.colx{display:flex;gap:6px;direction:ltr;font-family:var(--f-mono);font-size:.7rem;color:var(--muted)}.colx span{flex:1;text-align:center}
+.insight{border-inline-start:3px solid var(--accent);padding:4px 12px;margin:0}
+.proof{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);min-width:0}
+.proof a{color:var(--ink);font-weight:600;overflow-wrap:anywhere}
+.proofadd{display:grid;grid-template-columns:1fr 1fr auto;gap:6px}
+@media (max-width:480px){.proofadd{grid-template-columns:1fr}}
 @media (max-width:760px){
   .grid2{grid-template-columns:1fr}
   .stats{grid-template-columns:repeat(2,1fr)}
 }
 @media (max-width:480px){
+  .habit .mn{display:none}
+  .habit{padding:12px}
   .phases{grid-template-columns:1fr}
   .setrow,.setrow.sk{grid-template-columns:1fr auto}
   .setrow input:nth-child(2){grid-column:1}
@@ -170,6 +187,7 @@ details.rv .body{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px
       <nav class="tabs" role="tablist">
         <button class="tab" role="tab" data-v="today" aria-selected="true">اليوم</button>
         <button class="tab" role="tab" data-v="reviews" aria-selected="false">المراجعات</button>
+        <button class="tab" role="tab" data-v="insights" aria-selected="false">التحليل</button>
         <button class="tab" role="tab" data-v="setup" aria-selected="false">الإعداد</button>
       </nav>
       <div class="status"><span class="dot" id="sdot"></span><span id="stext">جاري التحميل…</span></div>
@@ -178,12 +196,10 @@ details.rv .body{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px
 
   <div id="banner"></div>
 
-  <section class="phases" id="phases"></section>
 
   <!-- TODAY -->
   <section id="v-today" class="sec">
     <div id="alerts"></div>
-    <div class="stats" id="stats"></div>
     <div class="grid2">
       <div class="panel">
         <div class="dayhead">
@@ -208,8 +224,14 @@ details.rv .body{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px
         <h2>المهارات</h2>
         <div class="label">دقائق تدريب مركّز</div>
         <div id="skills"></div>
+        <div class="field">
+          <span class="label">أنتجت شي اليوم؟ سجّله كدليل</span>
+          <div class="proofadd"><input id="pfT" placeholder="وش هو (مثلاً: ميكس أغنية)"><input id="pfU" placeholder="رابط (اختياري)" dir="ltr" inputmode="url"><button class="btn" id="pfAdd">+ دليل</button></div>
+        </div>
+        <div class="field"><button class="btn primary" id="storyBtn">بطاقة تقدم للستوري</button></div>
       </div>
     </div>
+    <div class="stats" id="stats"></div>
     <div class="panel">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
         <h2>شريط الـ 90 يوم</h2>
@@ -221,6 +243,12 @@ details.rv .body{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px
 
   <!-- REVIEWS -->
   <section id="v-reviews" class="sec" hidden>
+    <div class="panel sec"><h2>المراحل</h2><div class="phases" id="phases"></div></div>
+    <div class="panel">
+      <h2>البورتفوليو</h2>
+      <p class="muted" style="margin:4px 0 8px">كل دليل سجّلته. في آخر الـ 90 يوم هذا هو اللي تعرضه.</p>
+      <div id="portfolio"></div>
+    </div>
     <div class="panel">
       <h2>مراجعة المراحل</h2>
       <p class="muted" style="margin:4px 0 12px">كل 30 يوم: هل سلّمت الدليل؟ قارن عينة من أول المرحلة بعينة من آخرها.</p>
@@ -233,11 +261,25 @@ details.rv .body{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px
     </div>
   </section>
 
+  <!-- INSIGHTS -->
+  <section id="v-insights" class="sec" hidden>
+    <div class="panel sec"><h2>الخلاصة</h2><div id="insTxt" class="sec" style="gap:8px"></div></div>
+    <div class="panel sec"><div><h2>دقائق المهارات بالأسبوع</h2><div class="label" id="minsLegend"></div></div><div id="minsChart"></div></div>
+    <div class="grid2">
+      <div class="panel sec"><h2>التزامك بكل عادة</h2><div id="habitBars" class="sec" style="gap:10px"></div></div>
+      <div class="panel sec"><h2>أيام الأسبوع</h2><div id="dowBars" class="sec" style="gap:10px"></div></div>
+    </div>
+  </section>
+
   <!-- SETUP -->
   <section id="v-setup" class="sec" hidden>
     <div class="panel sec">
       <h2>الحساب والمزامنة</h2>
       <div id="account"></div>
+    </div>
+    <div class="panel sec">
+      <div><h2>تذكير يومي</h2><div class="label">يضيف لتقويمك تذكير كل يوم الساعة 10 بالليل لمدة 90 يوم، وتقدر تغيّر الوقت من التقويم.</div></div>
+      <div class="actions"><a class="btn primary" href="reminder.ics" style="text-decoration:none">أضف التذكير لتقويمي</a></div>
     </div>
     <div class="panel sec">
       <h2>تاريخ البداية</h2>
@@ -266,6 +308,7 @@ details.rv .body{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px
     </div>
   </section>
 </div>
+<div class="modal" id="storyModal" hidden><div class="box2"><div style="display:flex;justify-content:space-between;align-items:center"><h2>بطاقة الستوري</h2><button class="iconbtn" id="storyClose" aria-label="إغلاق">×</button></div><img id="storyImg" alt="بطاقة التقدم"><div class="actions"><button class="btn primary" id="storyShare">مشاركة أو حفظ</button></div><div class="label">على الجوال: اضغط "مشاركة" واختر إنستغرام أو "حفظ الصورة".</div></div></div>
 
 <script src="vendor/firebase-app-compat.js"></script>
 <script src="vendor/firebase-auth-compat.js"></script>
@@ -345,6 +388,7 @@ async function attach(user){
   unsubs.push(fs.collection(B()+'/days').onSnapshot(q=>{let ch=false;q.docChanges().forEach(c=>{if(c.doc.metadata.hasPendingWrites)return;const v=c.doc.data();if(!v||!v.n)return;if(c.type==='removed')delete days[v.n];else days[v.n]=v;ch=true});if(ch){localSave();softRender()}},()=>{}));
   unsubs.push(fs.collection(B()+'/reviews').onSnapshot(q=>{let ch=false;q.docChanges().forEach(c=>{if(c.doc.metadata.hasPendingWrites)return;if(c.type==='removed')delete reviews[c.doc.id];else reviews[c.doc.id]=c.doc.data()||{};ch=true});if(ch){localSave();softRender()}},()=>{}));
 }
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){const c=Math.min(Math.max(curDay(),1),90);if(sel!==c&&view==='today'){sel=c;softRender()}}});
 function detach(){unsubs.forEach(u=>u());unsubs=[];me=null;localSave();render()}
 function authErr(e){const m={'auth/invalid-credential':'الإيميل أو كلمة السر غلط','auth/wrong-password':'كلمة السر غلط','auth/user-not-found':'ما فيه حساب بهالإيميل، اضغط "حساب جديد"','auth/email-already-in-use':'الإيميل مسجّل، اضغط "دخول"','auth/weak-password':'كلمة السر لازم 6 أحرف على الأقل','auth/invalid-email':'الإيميل مو صحيح','auth/unauthorized-domain':'الدومين مو مضاف في Firebase (Authorized domains)','auth/network-request-failed':'ما فيه نت'};
   const el=$('#authMsg');if(el)el.textContent=m[e.code]||('صار خطأ: '+(e.code||e.message))}
@@ -406,13 +450,14 @@ function render(){
   $('#dayN').textContent=c<1?'0':Math.min(c,90);
   $('#phaseName').textContent=c<1?'قبل البداية':c>90?'خلصت الخطة':PHASE_NAMES[phaseOf(cd)];
   document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.v===view));
-  ['today','reviews','setup'].forEach(v=>{$('#v-'+v).hidden=v!==view});
+  ['today','reviews','insights','setup'].forEach(v=>{$('#v-'+v).hidden=v!==view});
   $('#banner').innerHTML=(FBCFG&&!me&&view!=='setup')?`<div class="banner"><span>سجّل دخول عشان بياناتك تتزامن بين جوالك وآيبادك ولابتوبك.</span><button class="btn primary" data-go="setup">تسجيل الدخول</button></div>`:cfg.example&&view!=='setup'?`<div class="banner"><span>المهارات والعادات والمراحل هنا قيم مبدئية كمثال. عدّلها على مقاسك قبل ما تبدأ.</span><button class="btn primary" data-go="setup">عدّل الإعداد</button></div>`:'';
   $('#phases').innerHTML=cfg.phases.map((p,i)=>{
     const st=c>(i+1)*30?'done':(c>=i*30+1&&c<=(i+1)*30)?'on':'';
     return `<div class="ph ${st}"><div class="t">${PHASE_NAMES[i]} <span class="label">${PHASE_SUB[i]}</span></div><p>${esc(p.goal)}</p><p><b>الدليل:</b> ${esc(p.proof)}</p></div>`}).join('');
   if(view==='today')renderToday();
   if(view==='reviews')renderReviews();
+  if(view==='insights')renderInsights();
   if(view==='setup'){renderSetup();renderAccount()}
 }
 function meter(p){let h='';for(let i=0;i<20;i++)h+=`<i class="${i<Math.round(p*20)?'f':''}"></i>`;return `<div class="meter">${h}</div>`}
@@ -423,7 +468,7 @@ function renderToday(){
   if(c<1)al=`<div class="alert">الخطة تبدأ ${esc(fmt(parseD(cfg.start)))}. باقي ${1-c} يوم.</div>`;
   else if(c>1&&c<=91&&score(c-1)===0&&c-1>=1)al=`<div class="alert">أمس فاتك. القاعدة: لا تفوّت يومين ورا بعض. سوّ النسخة الدنيا من كل عادة اليوم.</div>`;
   $('#alerts').innerHTML=al;
-  const sk=cfg.skills.map(s=>`<div class="stat panel"><div class="label">${esc(s.name)}</div><div class="v">${(S.mins[s.id]/60).toFixed(1)}<span class="label"> ساعة</span></div><div class="label num">هدف المرحلة ${(s.target*30/60).toFixed(0)} ساعة</div></div>`).join('');
+  const sk=cfg.skills.map(s=>`<div class="stat panel"><div class="label">${esc(s.name)}</div><div class="v">${(S.mins[s.id]/60).toFixed(1)}<span class="label"> ساعة</span></div><div class="label">هدف المرحلة ${(s.target*30/60).toFixed(0)} ساعة</div></div>`).join('');
   $('#stats').innerHTML=`<div class="stat panel"><div class="label">نسبة الالتزام</div><div class="v">${Math.round(S.consistency*100)}%</div>${meter(S.consistency)}</div>
   <div class="stat panel"><div class="label">السلسلة الحالية</div><div class="v">${S.streak}<span class="label"> يوم</span></div><div class="label">يوم ≥ 60% يحسب</div></div>`+sk;
   // day
@@ -467,7 +512,78 @@ function renderReviews(){
     const open=!done&&c>=b&&c<b+7;
     h+=`<details class="rv" ${open?'open':''}><summary><span><b>الأسبوع ${w}</b> <span class="label num">أيام ${a}–${b} · التزام ${c>=a?Math.round(sc*100)+'%':'—'}</span></span>${st}</summary><div class="body">${rvFields(k,WQ)}</div></details>`}
   $('#weekReviews').innerHTML=h;
+  const items=proofs().slice().sort((a,b)=>b.day-a.day);
+  $('#portfolio').innerHTML=items.length?items.map(x=>`<div class="proof"><div style="min-width:0">${x.u?`<a href="${esc(safeUrl(x.u))}" target="_blank" rel="noopener">${esc(x.t||x.u)}</a>`:`<b>${esc(x.t)}</b>`}<div class="label num">يوم ${x.day} · ${PHASE_NAMES[phaseOf(x.day)]}</div></div><button class="iconbtn" data-rmp="${x.id}" aria-label="حذف">×</button></div>`).join(''):'<p class="muted" style="margin:0">ما فيه أدلة للحين. سجّل أول دليل من تبويب اليوم.</p>';
 }
+function proofs(){return (reviews.proofs&&reviews.proofs.items)||[]}
+function safeUrl(u){u=String(u).trim();if(!/^https?:\/\//i.test(u))u='https://'+u;return u}
+function addProof(){const t=$('#pfT').value.trim(),u=$('#pfU').value.trim();if(!t&&!u)return;
+  const items=proofs().concat([{id:uid(),t,u,day:sel}]);reviews.proofs={items};saveReview('proofs');$('#pfT').value='';$('#pfU').value='';
+  const b=$('#pfAdd');b.textContent='✓ انحفظ';setTimeout(()=>{b.textContent='+ دليل'},1500)}
+function bars(rows){return rows.map(([l,v,txt])=>`<div class="hbar"><span>${esc(l)}</span><div class="tr"><b style="width:${Math.round(v*100)}%"></b></div><span class="num">${txt}</span></div>`).join('')}
+function renderInsights(){
+  const L=lastCounted();
+  if(L<1){$('#insTxt').innerHTML='<p class="muted">التحليل يبدأ أول ما تبدأ الخطة.</p>';['#minsChart','#habitBars','#dowBars'].forEach(x=>$(x).innerHTML='');return}
+  const logged=[];for(let i=1;i<=L;i++)if(days[i])logged.push(i);
+  // habits
+  const hr=cfg.habits.map(h=>{let c=0;for(let i=1;i<=L;i++)if(days[i]&&days[i].h&&days[i].h[h.id])c++;return [h.name,c/L,Math.round(c/L*100)+'%']});
+  $('#habitBars').innerHTML=bars(hr)||'<p class="muted">ما فيه عادات.</p>';
+  // weekdays
+  const DN=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'],sum=[0,0,0,0,0,0,0],cnt=[0,0,0,0,0,0,0];
+  for(let i=1;i<=L;i++){const w=dateOf(i).getDay();sum[w]+=score(i);cnt[w]++}
+  const dr=DN.map((n,w)=>[n,cnt[w]?sum[w]/cnt[w]:0,cnt[w]?Math.round(sum[w]/cnt[w]*100)+'%':'—']);
+  $('#dowBars').innerHTML=bars(dr);
+  // minutes per week
+  const W=Math.min(13,Math.ceil(L/7)),wk=[];let mx=1;
+  for(let w=1;w<=W;w++){const[a,b]=weekRange(w);const v=cfg.skills.map(s=>{let m=0;for(let i=a;i<=b;i++)m+=(days[i]&&days[i].m&&+days[i].m[s.id])||0;return m});wk.push(v);mx=Math.max(mx,...v)}
+  $('#minsChart').innerHTML=`<div class="cols">${wk.map((v,i)=>`<div class="c" title="الأسبوع ${i+1}">${v.map((m,j)=>`<i class="${j?'b':''}" style="height:${m/mx*100}%" title="${m} د"></i>`).join('')}</div>`).join('')}</div><div class="colx">${wk.map((_,i)=>`<span>${i+1}</span>`).join('')}</div>`;
+  $('#minsLegend').innerHTML=cfg.skills.map((s,j)=>`<i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(${j?'--h2':'--accent'})"></i> ${esc(s.name)}`).join(' &nbsp; ')+' · أعلى أسبوع '+mx+' د';
+  // text insights
+  const out=[];
+  if(logged.length<3){out.push('سجّل 3 أيام على الأقل عشان تطلع لك خلاصة مفيدة.')}else{
+    const weak=hr.slice().sort((a,b)=>a[1]-b[1])[0];if(weak&&weak[1]<.7)out.push(`أضعف عادة عندك: <b>${esc(weak[0])}</b> (${weak[2]}). صغّر نسختها الدنيا أكثر بدل ما تتركها.`);
+    const dv=dr.filter((x,w)=>cnt[w]);if(dv.length>=3){const best=dv.slice().sort((a,b)=>b[1]-a[1])[0],worst=dv.slice().sort((a,b)=>a[1]-b[1])[0];if(best[1]-worst[1]>.15)out.push(`أحسن أيامك <b>${best[0]}</b> وأضعفها <b>${worst[0]}</b>. جهّز لـ${worst[0]} نسخة أخف من يومك.`)}
+    const hi=logged.filter(i=>days[i].e>=4),lo=logged.filter(i=>days[i].e&&days[i].e<=2);
+    if(hi.length>=2&&lo.length>=2){const a=hi.reduce((x,i)=>x+score(i),0)/hi.length,b=lo.reduce((x,i)=>x+score(i),0)/lo.length;out.push(a-b>.15?`لما طاقتك عالية التزامك ${Math.round(a*100)}%، ولما تكون منخفضة ${Math.round(b*100)}%. النوم والرياضة هم مفتاح الباقي.`:`التزامك ثابت حتى لما طاقتك منخفضة (${Math.round(b*100)}%). هذا معناه إن النسخ الدنيا شغالة.`)}
+    const LW=L>=weekRange(W)[1]?W:W-1;if(LW>=2){const t=wk[LW-1].reduce((a,b)=>a+b,0),pv=wk[LW-2].reduce((a,b)=>a+b,0);if(pv)out.push(`دقائق المهارات في الأسبوع ${LW} كانت ${t} مقابل ${pv} في الأسبوع ${LW-1} (${t>=pv?'+':''}${Math.round((t-pv)/pv*100)}%).`)}
+    out.push(`سجّلت ${logged.length} من ${L} يوم، وعندك ${proofs().length} دليل في البورتفوليو.`);
+  }
+  $('#insTxt').innerHTML=out.map(x=>`<p class="insight">${x}</p>`).join('');
+}
+/* ---------- story card ---------- */
+let storyBlob=null;
+async function makeStory(){
+  const W=1080,H=1920,cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
+  try{await Promise.all(['700 120px "Readex Pro"','500 40px "IBM Plex Sans Arabic"','600 60px "IBM Plex Mono"'].map(f=>document.fonts.load(f)))}catch(e){}
+  const C={bg:'#111417',ink:'#E9ECEF',mu:'#98A2AD',ac:'#F0A12E',h:['#242A30','#4A3517','#80571C','#C0801F','#F4B04A']};
+  g.fillStyle=C.bg;g.fillRect(0,0,W,H);g.direction='rtl';g.textAlign='right';
+  const c=Math.min(Math.max(curDay(),0),90),S=stats(),R=W-90;
+  // meter
+  for(let i=0;i<20;i++){g.fillStyle=i<Math.round(S.consistency*20)?C.ac:C.h[0];const w=(W-180-19*8)/20;g.fillRect(90+i*(w+8),150,w,18)}
+  g.fillStyle=C.mu;g.font='500 44px "IBM Plex Sans Arabic",sans-serif';g.fillText('خطة 90 يوم',R,270);
+  g.fillStyle=C.ink;g.font='700 80px "Readex Pro",sans-serif';g.fillText('مرحلة '+(c<1?'—':PHASE_NAMES[phaseOf(Math.max(c,1))]),R,380);
+  g.fillStyle=C.mu;g.font='500 48px "IBM Plex Sans Arabic",sans-serif';g.fillText('اليوم',R,470);
+  g.direction='ltr';g.textAlign='right';g.fillStyle=C.ac;g.font='600 260px "IBM Plex Mono",monospace';g.fillText(String(c),R,700);
+  const nw=g.measureText(String(c)).width;g.fillStyle=C.mu;g.font='600 80px "IBM Plex Mono",monospace';g.fillText('/90',R-nw-24,700);g.direction='rtl';
+  // heatmap 15 cols x 6 rows, phase gaps
+  const cell=(W-180-14*12)/15;let y=780;
+  for(let p=0;p<3;p++){for(let r=0;r<2;r++){for(let k=0;k<15;k++){const n=p*30+r*15+k+1;const x=R-cell-k*(cell+12);
+    g.fillStyle=n>c?C.h[0]:C.h[level(score(n))];if(n>c)g.globalAlpha=.45;roundRect(g,x,y,cell,cell,10);g.globalAlpha=1;
+    if(n===c){g.strokeStyle=C.ink;g.lineWidth=5;g.strokeRect(x-4,y-4,cell+8,cell+8)}}
+    y+=cell+12}y+=30}
+  // stats
+  const st=[[Math.round(S.consistency*100)+'%','الالتزام'],[S.streak+'','أيام متتالية']].concat(cfg.skills.map(s=>[(S.mins[s.id]/60).toFixed(1),'ساعة '+s.name]));
+  const colW=(W-180)/st.length;y+=40;const vf=st.length>3?70:84;
+  st.forEach(([v,l],i)=>{const x=R-i*colW;g.fillStyle=C.ac;g.font='600 '+vf+'px "IBM Plex Mono",monospace';g.fillText(v,x,y+80);g.fillStyle=C.mu;g.font='500 36px "IBM Plex Sans Arabic",sans-serif';wrapText(g,l,x,y+140,colW-20,44)});
+  g.fillStyle=C.mu;g.font='500 38px "IBM Plex Sans Arabic",sans-serif';g.textAlign='center';g.fillText('لا تفوّت يومين ورا بعض',W/2,H-120);
+  return new Promise(r=>cv.toBlob(r,'image/png'));
+}
+function roundRect(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();g.fill()}
+function wrapText(g,t,x,y,mw,lh){const ws=t.split(' ');let line='';for(const w of ws){const tt=line?line+' '+w:w;if(g.measureText(tt).width>mw&&line){g.fillText(line,x,y);line=w;y+=lh}else line=tt}g.fillText(line,x,y)}
+async function openStory(){storyBlob=await makeStory();$('#storyImg').src=URL.createObjectURL(storyBlob);$('#storyModal').hidden=false}
+async function shareStory(){if(!storyBlob)return;const f=new File([storyBlob],'plan90-day'+Math.max(curDay(),0)+'.png',{type:'image/png'});
+  try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});return}}catch(e){if(e&&e.name==='AbortError')return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(storyBlob);a.download=f.name;document.body.appendChild(a);a.click();setTimeout(()=>a.remove(),500)}
 let draft=null;
 function renderSetup(){
   if(!draft)draft=JSON.parse(JSON.stringify(cfg));
@@ -486,6 +602,11 @@ document.addEventListener('click',e=>{
   if(t.id==='prev'){sel--;render();return}
   if(t.id==='next'){sel++;render();return}
   if(t.dataset.day){sel=+t.dataset.day;render();$('#v-today .panel').scrollIntoView({behavior:'smooth',block:'start'});return}
+  if(t.id==='pfAdd'){addProof();return}
+  if(t.dataset.rmp){reviews.proofs={items:proofs().filter(x=>x.id!==t.dataset.rmp)};saveReview('proofs');render();return}
+  if(t.id==='storyBtn'){openStory();return}
+  if(t.id==='storyClose'){$('#storyModal').hidden=true;return}
+  if(t.id==='storyShare'){shareStory();return}
   const d=days[sel]||(days[sel]={});
   if(t.dataset.h){d.h=d.h||{};d.h[t.dataset.h]=!d.h[t.dataset.h];saveDay(sel);render();return}
   if(t.dataset.e){const v=+t.dataset.e;d.e=d.e===v?0:v;saveDay(sel);render();return}
@@ -524,6 +645,7 @@ document.addEventListener('input',e=>{
   if(t.dataset.hi)draft.habits[+t.dataset.hi][t.dataset.hf]=t.value;
   if(t.dataset.pi)draft.phases[+t.dataset.pi][t.dataset.pf]=t.value;
 });
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.target.id==='pfT'||e.target.id==='pfU')){e.preventDefault();addProof()}});
 document.addEventListener('change',e=>{if(e.target.dataset.m)render();if(e.target.id==='importFile'&&e.target.files[0]){importData(e.target.files[0]);e.target.value=''}});
 init();
 })();
